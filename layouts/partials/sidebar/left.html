@@ -63,8 +63,9 @@
             </a>
         </li>
         {{ end }}
-
-        <div class="menu-bottom-section">
+    </ol>
+    <div class="menu-bottom-section">
+        <ol class="menu">
             {{- $currentLanguageCode := .Language.Lang -}}
             {{ with .Site.Home.AllTranslations }}
                 <li id="i18n-switch">  
@@ -84,6 +85,6 @@
                     <span>{{ T "darkMode" }}</span>
                 </li>
             {{ end }}
-        </div>
-    </ol>
+        </ol>
+    </div>
 </aside>
