@@ -8,8 +8,13 @@
                     {{- $Width := $image.resource.Width -}}
                     {{- $Height := $image.resource.Height -}}
                     {{- $Srcset := slice -}}
-                    
+
+                    <picture>
                     {{- if .Page.Site.Params.ImageProcessing.Cover.Enabled -}}
+                        {{- $thumbnail := $image.resource.Resize "webp 800x" -}}
+                        {{- $thumbnailRetina := $image.resource.Resize "webp 1600x" -}}
+                        {{- $Srcset = printf "%s 800w, %s 1600w" $thumbnail.RelPermalink $thumbnailRetina.RelPermalink -}}
+                        <source type="image/webp" srcset="{{ $Srcset }}" />
                         {{- $keys := slice "small" "big" -}}
                         {{- range $keys -}}
                             {{- with (index $.Page.Site.Params.ImageProcessing.Cover .) -}}
@@ -24,10 +29,11 @@
 
                     <img src="{{ $Permalink }}"
                         {{ with $Srcset }}srcset="{{ delimit . `, ` }}"{{ end }}
-                        width="{{ $Width }}" 
-                        height="{{ $Height }}" 
-                        loading="lazy"
+                        width="{{ $Width }}"
+                        height="{{ $Height }}"
+                        decoding="async"
                         alt="Featured image of post {{ .Title }}" />
+                    </picture>
                 {{ else }}
                     <img src="{{ $image.permalink }}" loading="lazy" alt="Featured image of post {{ .Title }}" />
                 {{ end }}

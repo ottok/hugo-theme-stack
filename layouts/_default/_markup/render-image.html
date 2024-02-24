@@ -9,6 +9,7 @@
 {{- $resizableTypes := .Page.Site.Params.ImageProcessing.ResizableTypes -}}
 {{- $galleryImage := false -}}
 
+<picture
 {{- if $image -}}
 	{{- $type := $image.MediaType.SubType -}}
 	{{- $allowed := in $allowedTypes $type -}}
@@ -20,19 +21,38 @@
 		{{- $Width = $image.Width -}}
 		{{- $Height = $image.Height -}}
 		{{- $galleryImage = true -}}
+	{{- end -}}
 
-		{{- if $imageProcessing -}}
-			{{- $keys := slice "small" "big" -}}
-			{{- range $keys -}}
-				{{- with (index $.Page.Site.Params.ImageProcessing.Content .) -}}
-					{{- if gt $Width .Threshold -}}
-						{{- $resized := $image.Resize (printf "%dx" .Width) -}}
-						{{- $Srcset = $Srcset | append (printf `%s %dw` $resized.RelPermalink .Width) -}}
-					{{- end -}}
+	{{ if $galleryImage }}
+			class="gallery-image"
+			data-flex-grow="{{ div (mul $image.Width 100) $image.Height }}"
+			data-flex-basis="{{ div (mul $image.Width 240) $image.Height }}px"
+	{{ end }}
+{{- end -}}
+>
+
+{{- if $image -}}
+	{{- $Permalink = $image.RelPermalink -}}
+	{{- if (default true .Page.Site.Params.imageProcessing.content.enabled) -}}
+		{{- $small := $image.Resize `webp 480x` -}}
+		{{- $big := $image.Resize `webp 1024x` -}}
+		{{- $Srcset = printf `%s 480w, %s 1024w` $small.RelPermalink $big.RelPermalink -}}
+
+		<source type="image/webp"
+			srcset="{{ $Srcset }}"
+		>
+
+	{{- if $imageProcessing -}}
+		{{- $keys := slice "small" "big" -}}
+		{{- range $keys -}}
+			{{- with (index $.Page.Site.Params.ImageProcessing.Content .) -}}
+				{{- if gt $Width .Threshold -}}
+					{{- $resized := $image.Resize (printf "%dx" .Width) -}}
+					{{- $Srcset = $Srcset | append (printf `%s %dw` $resized.RelPermalink .Width) -}}
 				{{- end -}}
 			{{- end -}}
-			{{- $Srcset = $Srcset | append (printf `%s %dw` $Permalink $Width) -}}
 		{{- end -}}
+		{{- $Srcset = $Srcset | append (printf `%s %dw` $Permalink $Width) -}}
 	{{- end -}}
 {{- end -}}
 
@@ -41,12 +61,10 @@
 	{{ with $Height }}height="{{ . }}"{{ end }}
 	{{ with $Srcset }}srcset="{{ delimit . `, ` }}"{{ end }}
 	loading="lazy"
+	decoding="async"
 	{{ with $alt }}
 		alt="{{ . }}"
 	{{ end }}
-	{{ if $galleryImage }}
-		class="gallery-image" 
-		data-flex-grow="{{ div (mul $image.Width 100) $image.Height }}"
-		data-flex-basis="{{ div (mul $image.Width 240) $image.Height }}px"
-	{{ end }}
 >
+
+</picture>
